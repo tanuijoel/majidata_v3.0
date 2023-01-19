@@ -1,0 +1,1865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wasreb</title>
+    <link rel="stylesheet" href="https://unpkg.com/flowbite@1.6.0/dist/flowbite.min.css" />
+    <link href="styles.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://openlayers.org/en/v6.2.1/css/ol.css" type="text/css">
+    <!-- Openlayers -->
+    <link rel="stylesheet" href="https://openlayers.org/en/latest/legacy/ol.css" />
+    <link href="./script/ol-ext.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css" rel="stylesheet"/>
+    <style>
+
+        /* #layer_info_table {
+        font-family: Arial, Helvetica, sans-serif;
+        border-collapse: collapse;
+        width: 100%;
+        }
+
+        #layer_info_table td, #layer_info_table th {
+        border: 1px solid #ddd;
+        padding: 5px;
+        max-width:100% !important;
+        white-space:nowrap !important;
+        }
+
+        #layer_info_table tr:nth-child(even){background-color: #f2f2f2;}
+
+        #layer_info_table tr:hover {background-color: #ddd;}
+
+        #layer_info_table th {
+        padding-top: 12px;
+        padding-bottom: 12px;
+        text-align: left;
+        background-color: #04AA6D;
+        color: white;
+        } */
+
+        #tableID tbody tr.selected {
+                color: white;
+                background-color: #eeeeee;
+        }
+
+        tr{cursor: pointer; transition: all .25s ease-in-out}
+            .selected{background-color: red; 
+            font-weight: bold; color: #fff;}
+        
+        table tr td {
+            cursor: pointer;
+        }
+        .layer_table
+        {
+            overflow-y:auto;
+            overflow-x:auto;
+            overflow: auto;
+            display: block;
+        }
+
+        .progress-bar {
+            position: relative;
+            height: 100px;
+            width: 100px;
+            }
+
+            .progress-bar div {
+            position: absolute;
+            height: 100px;
+            width: 100px;
+            border-radius: 50%;
+            }
+
+            .progress-bar div span {
+            position: absolute;
+            font-family: Arial;
+            font-size: 25px;
+            line-height: 75px;
+            height: 75px;
+            width: 75px;
+            left: 12.5px;
+            top: 12.5px;
+            text-align: center;
+            border-radius: 50%;
+            background-color: white;
+            }
+
+            .progress-bar .background { background-color: #b3cef6; }
+
+            .progress-bar .rotate {
+            clip: rect(0 50px 100px 0);
+            background-color: #4b86db;
+            }
+
+            .progress-bar .left {
+            clip: rect(0 50px 100px 0);
+            opacity: 1;
+            background-color: #b3cef6;
+            }
+
+            .progress-bar .right {
+            clip: rect(0 50px 100px 0);
+            transform: rotate(180deg);
+            opacity: 0;
+            background-color: #4b86db;
+            }
+
+        @keyframes 
+        toggle {  0% {
+        opacity: 0;
+        }
+        100% {
+        opacity: 1;
+        }
+        }
+
+        /* popup style */
+        .ol-popup {
+        max-width:300px;
+        min-width:100px;
+        min-height:1em;
+        z-index:99999;
+        position:absolute;
+
+        }
+        /* Image on popup */
+        .ol-popup img {
+        float: left;
+        margin: 0 0.5em 0 0;
+        max-width: 100px;
+        max-height: 100px;
+        }
+        /* no image content tooltips */
+        .ol-popup.tooltips img {
+        display:none;
+        }
+        /* Custom red style (tips) */
+        .ol-popup.red > div {
+        background-color: red;
+        }
+        .ol-popup.red .anchor {
+        color: red;
+        }
+
+        /* Custom orange style (tips) */
+        .ol-popup.tips.orange > div {
+        border-color:#da7;
+        background-color:#eca;
+        }
+        .ol-popup.tips.orange .anchor {
+        color: #da7;
+        }
+
+        /* orange style (default) */
+        .ol-popup.default.orange > div {
+        border:4px solid #f96;
+        }
+        .ol-popup.default.orange .anchor {
+        margin: -10px 22px;
+        }
+        .ol-popup.default.orange .anchor::after {
+        margin: 5px -11px; 
+        }
+        .ol-popup-middle.default.orange .anchor::after {
+        margin: -10.5px -27px /*border:4 +2 px */; 
+        }
+        .ol-popup.default.orange .anchor {
+        color: #f96;
+        }
+        .ol-popup.default.orange .closeBox {
+        background-color: rgba(255, 153, 102, 0.7);
+        }
+        .ol-popup.default.orange .closeBox:hover {
+        background-color: rgba(255, 153, 102, 1);
+        }
+        .ol-popup i {
+        color: #666;
+        }
+
+         #map {
+            
+          width: 100%;
+          height: 100% !important;
+          position:fixed
+
+         }
+
+        .ol-custom{
+            z-index: 1000 !important;
+            top: 4.5em !important;
+            left: .5em !important;
+        }
+
+        #kpi_list { cursor: pointer; }
+
+        .progress {
+            width: 150px;
+            height: 150px !important;
+            float: left; 
+            line-height: 150px;
+            background: none;
+            margin: 20px;
+            box-shadow: none;
+            position: relative;
+            }
+            .progress:after {
+            content: "";
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 12px solid #fff;
+            position: absolute;
+            top: 0;
+            left: 0;
+            }
+            .progress>span {
+            width: 50%;
+            height: 100%;
+            overflow: hidden;
+            position: absolute;
+            top: 0;
+            z-index: 1;
+            }
+            .progress .progress-left {
+            left: 0;
+            }
+            .progress .progress-bar {
+            width: 100%;
+            height: 100%;
+            background: none;
+            border-width: 12px;
+            border-style: solid;
+            position: absolute;
+            top: 0;
+            }
+            .progress .progress-left .progress-bar {
+            left: 100%;
+            border-top-right-radius: 80px;
+            border-bottom-right-radius: 80px;
+            border-left: 0;
+            -webkit-transform-origin: center left;
+            transform-origin: center left;
+            }
+            .progress .progress-right {
+            right: 0;
+            }
+            .progress .progress-right .progress-bar {
+            left: -100%;
+            border-top-left-radius: 80px;
+            border-bottom-left-radius: 80px;
+            border-right: 0;
+            -webkit-transform-origin: center right;
+            transform-origin: center right;
+            animation: loading-1 1.8s linear forwards;
+            }
+            .progress .progress-value {
+            width: 90%;
+            height: 90%;
+            border-radius: 50%;
+            background: #000;
+            font-size: 24px;
+            color: #fff;
+            line-height: 135px;
+            text-align: center;
+            position: absolute;
+            top: 5%;
+            left: 5%;
+            }
+            .progress.blue .progress-bar {
+            border-color: #049dff;
+            }
+            .progress.blue .progress-left .progress-bar {
+            animation: loading-2 1.5s linear forwards 1.8s;
+            }
+            .progress.yellow .progress-bar {
+            border-color: #fdba04;
+            }
+            .progress.yellow .progress-right .progress-bar {
+            animation: loading-3 1.8s linear forwards;
+            }
+            .progress.yellow .progress-left .progress-bar {
+            animation: none;
+            }
+            @keyframes loading-1 {
+            0% {
+                -webkit-transform: rotate(0deg);
+                transform: rotate(0deg);
+            }
+            100% {
+                -webkit-transform: rotate(180deg);
+                transform: rotate(180deg);
+            }
+            }
+            @keyframes loading-2 {
+            0% {
+                -webkit-transform: rotate(0deg);
+                transform: rotate(0deg);
+            }
+            100% {
+                -webkit-transform: rotate(144deg);
+                transform: rotate(144deg);
+            }
+            }
+            @keyframes loading-3 {
+            0% {
+                -webkit-transform: rotate(0deg);
+                transform: rotate(0deg);
+            }
+            100% {
+                -webkit-transform: rotate(135deg);
+                transform: rotate(135deg);
+            }
+            }
+
+    </style>
+</head>
+    <body class="font-body min-h-screen flex flex-col justify-center align-middle">
+        
+        <section 
+            x-data="{ 
+                    sidebarOpen: false, 
+                    navToShow: 'Layers',
+                    kpiToShow: 'Water coverage',
+                    switchView (viewToShow) {this.navToShow = viewToShow},
+                    kpis:[
+                        {
+                            id: '4d1471b8-99a5-44ce-8d3a-8fa6de56db09',
+                            icon: './img/icons/waterdrop-svgrepo-com.svg',
+                            name: 'Water coverage',
+                            tooltip: 'water-coverage',
+                            metricGood: '> 90',
+                            metricAcceptable: '80 - 90',
+                            metricNotAcceptable: '< 80'
+                        },
+                        {
+                            id: '7ef80360-2e7c-42a1-acdd-5f225aad4036',
+                            name: 'Non-revenue water',
+                            tooltip: 'non-revenue-water',
+                            icon: './img/icons/non-revenue-06.svg',
+                            metricGood: '< 20',
+                            metricAcceptable: '20 - 25',
+                            metricNotAcceptable: '> 25'
+                        },
+                        {
+                            id: 'e33604d3-3076-44b7-ba28-d7e6da21b396',
+                            name: 'Metering ratio',
+                            tooltip: 'metering-ratio',
+                            icon: './img/icons/metering-ratio-02.svg',
+                            metricGood: '100',
+                            metricAcceptable: '95 - 99',
+                            metricNotAcceptable: '< 95' 
+                        },
+                        {
+                            id: 'fb29399d-ace3-4254-a610-fbf82cc5eafd',
+                            icon: './img/icons/drinking-water-01.svg',
+                            name: 'Water quality',
+                            tooltip: 'water-quality',
+                            metricGood: '> 95',
+                            metricAcceptable: '90 - 95',
+                            metricNotAcceptable: '< 90'
+                        },
+                        {
+                            id: '0b3e2d4c-7525-4b24-b7a9-35671c213b4f',
+                            icon: './img/icons/clock-04.svg',
+                            name: 'Hours of supply',
+                            tooltip: 'hours-of-supply',
+                            metricGood: '> 21 - 24',
+                            metricAcceptable: '16 - 20',
+                            metricNotAcceptable: '< 16'
+                        },
+                        {
+                            id: 'f99313fb-f61e-4c4e-bc2b-6d2b68a75ee0',
+                            icon: './img/icons/cost-coverage-01.svg',
+                            name: 'O+M cost coverage',
+                            tooltip: 'cost-coverage',
+                            metricGood: '< 20',
+                            metricAcceptable: '20 - 30',
+                            metricNotAcceptable: '> 30'
+                        },
+                        {
+                            id: '8b20fa05-e47e-4631-86ba-8a43d9fa3f6d',
+                            name: 'Revenue collection efficiency',
+                            tooltip: 'collection-efficiency',
+                            icon: './img/icons/revenue-collection-05.svg',
+                            metricGood: '> 95',
+                            metricAcceptable: '85 - 95',
+                            metricNotAcceptable: '< 85' 
+                        },
+                        {
+                            id: 'b8bda7be-3794-4105-91d8-e9230f17bba2',
+                            name: 'Staff productivity',
+                            tooltip: 'staff-productivity',
+                            icon: './img/icons/staff-productivity-03.svg',
+                            metricGood: '< 5',
+                            metricAcceptable: '5 - 8',
+                            metricNotAcceptable: '> 8' 
+                        }
+                    ],
+                    legends: {
+                        legendOne: [
+                            'rgb(196, 10, 10)',
+                            'rgb(204, 46, 35)',
+                            'rgb(212, 80, 59)',
+                            'rgb(219, 115, 86)',
+                            'rgb(230, 149, 117)',
+                            'rgb(237, 180, 147)',
+                            'rgb(245, 207, 179)',
+                            'rgb(255, 235, 214)',
+                            'rgb(255, 255, 138)',
+                            'rgb(255, 255, 0)',
+                            'rgb(204, 255, 204)',
+                            'rgb(14, 204, 14)'
+                        ],
+                        legendTwo: [
+                            'rgb(14, 204, 14)',
+                            'rgb(204, 255, 204)',
+                            'rgb(255, 255, 0)',
+                            'rgb(255, 235, 214)',
+                            'rgb(245, 207, 179)',
+                            'rgb(237, 180, 147)',
+                            'rgb(230, 149, 117)',
+                            'rgb(219, 115, 86)',
+                            'rgb(212, 80, 59)',
+                            'rgb(204, 46, 35)',
+                            'rgb(196, 10, 10)'
+                        ],
+                        legendThree: [
+                            'rgb(196, 10, 10)',
+                            'rgb(201, 37, 28)',
+                            'rgb(209, 64, 48)',
+                            'rgb(214, 93, 69)',
+                            'rgb(222, 119, 91)',
+                            'rgb(227, 144, 111)',
+                            'rgb(235, 169, 136)',
+                            'rgb(240, 192, 161)',
+                            'rgb(247, 215, 188)',
+                            'rgb(255, 235, 214)',
+                            'rgb(255, 255, 0)',
+                            'rgb(14, 204, 14)'
+                        ]
+                    }
+                    
+                }" 
+            class="flex flex-grow overflow-x-hidden relative text-sm">
+            <nav class="flex flex-col w-12 bg-wsblue-500 text-white border-r border-wsblue-400 z-20 absolute left-0 top-0 h-full">
+                <div class="border-b border-wsblue-400 p-2 bg-transparent hover:bg-wsblue-700 cursor-pointer transition-colors ease-in-out">
+                    <svg class="w-4 h-4 mx-auto cursor-pointer transition-all ease-in-out" :class="{'rotate-180' : sidebarOpen}" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg" x-on:click="sidebarOpen = !sidebarOpen">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </div>
+                <div class="flex-grow flex flex-col justify-between">
+                    <div>
+                        <div class="w-full text-center bg-transparent hover:bg-wsblue-700 cursor-pointer transition-colors ease-in-out" data-tooltip-target="tooltip-layers" data-tooltip-placement="right">
+                            <button type="button" class="p-2 mx-auto" x-on:click="switchView('Layers')">
+                                <img src="./img/icons/layers.svg" alt="layers" class="w-4 h-4 mx-auto">
+                            </button>
+                        </div>
+                        <div id="tooltip-layers" role="tooltip"
+                            class="w-24 absolute z-10 invisible inline-block px-2 py-1 text-sm text-center font-medium text-white transition-opacity duration-300 bg-wsblue-700 rounded-md shadow-sm opacity-0 tooltip">
+                            Layers
+                            <div class="tooltip-arrow" data-popper-arrow></div>
+                        </div>
+                        
+                        <div class="w-full text-center bg-transparent hover:bg-wsblue-700 cursor-pointer transition-colors ease-in-out" data-tooltip-target="tooltip-search" data-tooltip-placement="right">
+                            <button type="button" class="p-2 mx-auto" x-on:click="switchView('Search')">
+                                <img src="./img/icons/search.svg" alt="layers" class="w-4 h-4 mx-auto">
+                            </button>
+                            
+                        </div>
+                        <div id="tooltip-search" role="tooltip"
+                            class="w-32 absolute z-10 invisible inline-block px-2 py-1 text-sm text-center font-medium text-white transition-opacity duration-300 bg-wsblue-700 rounded-md shadow-sm opacity-0 tooltip">
+                            Search/Filter
+                            <div class="tooltip-arrow" data-popper-arrow></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="w-full text-center bg-transparent hover:bg-wsblue-700 cursor-pointer transition-colors ease-in-out">
+                            <button type="button" class="p-2 mx-auto" data-modal-target="aboutModal" data-modal-toggle="aboutModal" data-tooltip-target="tooltip-about" data-tooltip-placement="right">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
+                                    aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z">
+                                    </path>
+                                </svg>
+                            </button>
+                            <div id="tooltip-about" role="tooltip"
+                                class="w-24 absolute z-10 invisible inline-block px-2 py-1 text-sm font-medium text-white transition-opacity duration-300 bg-wsblue-700 rounded-md shadow-sm opacity-0 tooltip">
+                                About us
+                                <div class="tooltip-arrow" data-popper-arrow></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <aside style=" padding-left: 3rem;" class="flex-shrink-0 text-white bg-wsblue-500 pb-2 pl-12 w-72 transition-all duration-300 overflow-y-scroll"
+                :class="{ '-ml-60': !sidebarOpen }">
+
+                <!-- Layers -->
+                <div x-show="navToShow === 'Layers'" id="layers">
+                    <h3 class="font-bold bg-wsblue-700 px-2 py-1.5 border-b border-wsblue-400">Layers</h3>
+                    
+                    <!-- <div x-data="{isOpen: false}" id="checkbox-group-1" class="p-2">
+                        <div id="utilities_title"></div>
+                        <div id="utilities_sub_title"></div>
+                    </div> -->
+                    
+                    <div x-data="{isOpen: false}" id="checkbox-group-2" class="p-2">
+                        <div id="utilities_title"></div>
+                    </div>
+                </div>
+                <!-- end Layers -->
+
+                <!-- Search -->
+                <div x-show="navToShow === 'Search'" id="search">
+                    <h3 class="font-bold bg-wsblue-700 px-2 py-1.5 border-b border-wsblue-400">Search</h3>
+
+                    <div class="p-2 mt-2">
+                        <label class="text-xs">Search term</label>
+                        <input type="text" name="search" class="w-full bg-wsblue-400 border border-wsblue-300 rounded-sm text-sm px-2 py-1" placeholder="Search ..." />
+                    </div>
+
+                    <div class="p-2 mt-2">
+                        <label class="text-xs">Filter by county</label>
+                        <select name="filter-by-county" class="w-full bg-wsblue-400 border border-wsblue-300 rounded-sm text-sm px-2 py-1">
+                            <option value="1">County 1</option>
+                            <option value="2">County 2</option>
+                            <option value="3">County 3</option>
+                            <option value="4">County 4</option>
+                            <option value="5">County 5</option>
+                        </select>
+                    </div>
+
+                    <div class="p-2 mt-2">
+                        <label class="text-xs">WSP</label>
+                        <select name="filter-by-wsp" class="w-full bg-wsblue-400 border border-wsblue-300 rounded-sm text-sm px-2 py-1">
+                            <option value="1">WSP 1</option>
+                            <option value="2">WSP 2</option>
+                            <option value="3">WSP 3</option>
+                            <option value="4">WSP 4</option>
+                            <option value="5">WSP 5</option>
+                        </select>
+                    </div>
+
+                    <div class="p-2 mt-2">
+                        <label class="text-xs">SSSP</label>
+                        <select name="filter-by-sssp" class="w-full bg-wsblue-400 border border-wsblue-300 rounded-sm text-sm px-2 py-1">
+                            <option value="1">SSSP 1</option>
+                            <option value="2">SSSP 2</option>
+                            <option value="3">SSSP 3</option>
+                            <option value="4">SSSP 4</option>
+                            <option value="5">SSSP 5</option>
+                        </select>
+                    </div>
+
+                    <div class="p-2 mt-2">
+                        <button class="w-full font-bold uppercase text-xs bg-wsblue-700 hover:bg-wsblue-600 rounded-sm border border-wsblue-300 p-2">Search</button>
+                    </div>
+                </div>
+                <!-- end search -->
+            </aside>
+
+            <main class="flex-grow flex-1 relative">
+                <header class="border-b border-wsblue-300 p-1.5">
+                    <div class="flex justify-between">
+                        <div class="basis-3/10"><img src="./img/combined-logo.png" class="h-12"></div>
+                        <button type="button"
+                            aria-expanded="false"
+                            class="flex items-center justify-center text-white bg-wsblue-500 rounded-full w-10 h-10 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 focus:outline-none" data-modal-toggle="contact-us-modal">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
+                                aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75">
+                                </path>
+                            </svg>
+                        </button>
+                    </div>
+                </header>
+                
+                <div class="p-2">
+                    <div id="map"></div>
+                </div>
+
+                <div id="legend" class="absolute left-2 bottom-4">
+                    <p class="text-xs text-gray-500 uppercase font-bold">Legend</p>
+
+                    <div x-show="kpiToShow === 'Water coverage'" class="flex">
+                        <template x-for="color in legends.legendOne">
+                            <div class="w-5 h-5" :style="{backgroundColor: color}"></div>
+                        </template>
+                    </div>
+
+                    <div x-show="kpiToShow === 'Non-revenue water'" class="flex">
+                        <template x-for="color in legends.legendTwo">
+                            <div class="w-5 h-5" :style="{backgroundColor: color}"></div>
+                        </template>
+                    </div>
+
+                    <div x-show="kpiToShow === 'Metering ratio'" class="flex">
+                        <template x-for="color in legends.legendThree">
+                            <div class="w-5 h-5" :style="{backgroundColor: color}"></div>
+                        </template>
+                    </div>
+                    
+                </div>
+
+
+                <div data-dial-init class="absolute right-4 bottom-4 group">
+                    <div id="speed-dial-menu-default" class="hidden">
+                        <div class="flex flex-col items-center mb-4 space-y-2">
+                            <template x-for="kpi in kpis" :key="kpi.id">
+                            <div>
+                                <button id="kpi_list" :data-kpi-name="kpi.name" :data-tooltip-target="kpi.tooltip"  x-on:click="kpiToShow = kpi.name" type="button"
+                                    data-tooltip-placement="left" class="kpi-selector" data-drawer-target="kpi-drawer" data-drawer-show="kpi-drawer"
+                                    data-drawer-backdrop="false" aria-controls="kpi-drawer" data-drawer-placement="right">
+                                    <img :src="kpi.icon" class="w-5 h-5" />
+                                    <span class="sr-only" x-text="kpi.name"></span>
+                                </button>
+                                <div :id="kpi.tooltip" x-text="kpi.name" role="tooltip"
+                                    class="absolute z-10 invisible inline-block w-48 px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-wsblue-500 rounded-md shadow-sm opacity-0 tooltip">
+                                    <div class="tooltip-arrow" data-popper-arrow></div>
+                                </div>
+                            </div>
+                            </template>
+                        </div>
+                    </div>
+                    <button type="button" data-dial-toggle="speed-dial-menu-default" aria-controls="speed-dial-menu-default"
+                        aria-expanded="false"
+                        class="flex items-center justify-center text-white bg-wsblue-500 rounded-full w-10 h-10 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 focus:outline-none">
+                        <img src="./img/icons/gauge-indicator-svgrepo-com.svg" class="w-6 h-6" />
+                        <span class="sr-only">Open actions menu</span>
+                    </button>
+                </div>
+
+            </main>
+           
+            <!-- drawer -->
+            <div id="kpi-drawer" class="kpi-popbox fixed z-40 h-screen overflow-y-auto bg-white w-80 shadow-lg" tabindex="-1"
+                aria-labelledby="kpi-drawer-label">
+                <h5 id="kpi-drawer-label" class="text-sm font-semibold text-white uppercase p-2 bg-wsblue-500" x-text="kpiToShow"></h5>
+                <button type="button" data-drawer-hide="kpi-drawer" aria-controls="kpi-drawer"
+                    class="text-gray-200 bg-transparent hover:bg-wsblue-300 hover:text-white rounded-sm text-xs p-1 absolute top-0 right-0 inline-flex items-center">
+                    <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd"
+                            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                            clip-rule="evenodd"></path>
+                    </svg>
+                    <span class="sr-only">Close menu</span>
+                </button>
+                <div class="pt-4 px-2 overflow-y-auto flex flex-col flex-grow justify-between">
+                    <div>
+                        <h3 class="text-center font-bold text-xl">National</h3>
+                        
+                        <template x-for="kpi in kpis" :key="kpi.id">
+                            <div x-show="kpi.name === kpiToShow" class="mt-2 mb-9">
+                                <div class="flex flex-col justify-center mb-9">
+                                    <div :class="kpi.tooltip" class="circular-progress mx-auto shadow-lg">
+                                        <div class="value-container text-wsblue-600">0</div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div id="sector-benchmarks" class="text-center">
+                                        <h2 class="font-bold uppercase text-center text-xs mb-2">Sector benchmarks
+                                        </h2>
+                                        <div id="benchmarks">
+                                            <div class="benchmark-small bg-red-500 border border-red-300">
+                                                <p x-text="kpi.metricNotAcceptable" class="benchmark-small-text p-0 m-0"></p>
+                                                <p class="benchmark-small-text p-0 m-0">Not acceptable</p>
+                                            </div>
+                                            <div class="benchmark-small bg-[rgba(255,255,0)] border border-yellow-200">
+                                                <p x-text="kpi.metricAcceptable" class="benchmark-small-text p-0 m-0 text-black"></p>
+                                                <p class="benchmark-small-text p-0 m-0 text-black">Acceptable</p>
+                                            </div>
+                                            <div class="benchmark-small bg-green-500 border border-green-200">
+                                                <p x-text="kpi.metricGood" class="benchmark-small-text p-0 m-0"></p>
+                                                <p class="benchmark-small-text p-0 m-0">Good</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+
+                    <div class="bg-gray-100 -mx-2 text-gray-600">
+                        <div class="flex justify-between py-4 px-2 border-b border-gray-200">
+                            <p class="basis-1/3 meta-label">Total population served</p>
+                            <p id="population_served" class="basis-2/3 text-2xl pl-6">0</p>
+                        </div>
+                        <div class="flex justify-between py-4 px-2 border-b border-gray-200">
+                            <p class="basis-1/3 meta-label">Total active water connections</p>
+                            <p id="active_water_connections" class="basis-2/3 text-2xl pl-6">0</p>
+                        </div>
+                        <div class="flex justify-between py-4 px-2 border-b border-gray-200">
+                            <p class="basis-1/3 meta-label">Total population in service area</p>
+                            <p id="population_service_area" class="basis-2/3 text-2xl pl-6">0</p>
+                        </div>
+
+                         <div class="flex justify-between py-4 px-2 border-b border-gray-200">
+                            <p class="basis-1/3 meta-label">Total water produced (M<sup>3</p>
+                            <p id="water_produced" class="basis-2/3 text-2xl pl-6">0</p>
+                        </div> 
+                    </div>
+                </div>
+            </div>
+            <!-- end drawer -->
+        </section>
+        
+        
+
+        <!-- About modal -->
+        <div id="aboutModal" tabindex="-1" aria-hidden="true" data-modal-placement="center"
+            class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-modal md:h-full">
+            <div class="relative w-full h-full max-w-2xl md:h-auto">
+                <!-- Modal content -->
+                <div class="relative bg-white rounded-lg shadow">
+                    <!-- Modal header -->
+                    <div class="flex items-start justify-between p-4 border-b rounded-t">
+                        <h3 class="text-xl font-semibold text-gray-900">
+                            About
+                        </h3>
+                        <button type="button"
+                            class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center"
+                            data-modal-hide="aboutModal">
+                            <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd"
+                                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                    clip-rule="evenodd"></path>
+                            </svg>
+                            <span class="sr-only">Close modal</span>
+                        </button>
+                    </div>
+                    <!-- Modal body -->
+                    <div class="p-6 space-y-6 text-sm text-gray-500">
+                        <div class="border-b border-wsblue-200 pb-6">
+                            <img src="./img/majidata-logo.png" alt="Majidata" class="h-8 mx-auto mt-2 mb-6">
+                            <p class="mb-4">MajiData was launched as the pro-poor database of the Kenyan water sector covering all urban low income
+                                areas in Kenya. A comprehensive data collection exercise started in 2009 and ended in 2011. More than 1800 urban low
+                                income areas in 212 cities and towns of Kenya were mapped and the data captured. In 2016, the database was updated.
+                                Developed initially by WASREB and WSTF with the support of GIZ through Water Sector Reform Programme, the database
+                                has now grown with the vision of being the repository for georeferenced water services data.</p>
+                            <p>This new version of Majidata offers not only the pro-poor information and sanitation infrastructure, but also Water
+                                Service Providers' service area maps, networks and small scale service providers within the counties.</p>
+                        </div>
+
+                        <div>
+                            <img src="./img/wtf-logo-color.png" alt="Water Sector Trust Fund" class="h-16 mx-auto mb-6">
+                            <p class="mb-4">The Water Sector Trust Fund (WaterFund) is a Kenyan State Corporation under the Ministry of Water &
+                                Sanitation and Irrigation and established under the Water Act, 2016, with the mandate to provide conditional and
+                                unconditional grants to the Counties and to assist in financing the development of and management of water and
+                                sanitation services in the marginalised and underserved areas.</p>
+                            <p>It previously existed as the Water Services Trust Fund prior to the repeal of the Water Act, 2002, which had
+                                established it.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- END About modal -->
+
+        <!-- contact us  -->
+        <div id="contact-us-modal" tabindex="-1" aria-hidden="true"
+            class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 p-4 w-full md:inset-0 h-modal md:h-full">
+            <div class="relative w-full max-w-md h-full md:h-auto">
+                <!-- Modal content -->
+                <div class="relative bg-white rounded-md shadow-lg">
+                    <button type="button"
+                        class="absolute top-3 right-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-800 dark:hover:text-white"
+                        data-modal-toggle="contact-us-modal">
+                        <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd"
+                                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                clip-rule="evenodd"></path>
+                        </svg>
+                        <span class="sr-only">Close modal</span>
+                    </button>
+                    <div class="py-6 px-6 lg:px-8">
+                        <h3 class="mb-4 text-xl font-medium text-wsblue-900">Contact us</h3>
+                        <form class="space-y-6" action="#">
+                            <div>
+                                <label for="email" class="block mb-2 text-sm font-medium text-gray-900">Your email</label>
+                                <input type="email" name="email" id="email"
+                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-md focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
+                                    placeholder="name@company.com" required>
+                            </div>
+        
+                            <div>
+                                <label for="phone" class="block mb-2 text-sm font-medium text-gray-900">Your phone</label>
+                                <input type="tel" name="phone" id="phone"
+                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-md focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 ">
+                            </div>
+        
+                            <div>
+                                <label for="phone" class="block mb-2 text-sm font-medium text-gray-900">Message/Enquiry</label>
+                                <textarea
+                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-md focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "></textarea>
+                            </div>
+        
+        
+                            <button
+                                class="w-full text-white bg-wsblue-700 hover:bg-wsblue-600 font-medium rounded-md text-sm px-5 py-2.5 text-center uppercase">Get
+                                in touch</button>
+        
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- END contact us modal -->
+        <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+        <script src="https://unpkg.com/flowbite@1.6.0/dist/flowbite.min.js" defer></script>
+        <script src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
+        <script type="text/javascript" src="https://openlayers.org/en/latest/legacy/ol.js"></script>
+        <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL,Object.assign"></script>
+        <script src="./script/ol-ext.js"></script>
+        <!-- Pointer events polyfill for old browsers, see https://caniuse.com/#feat=pointer -->
+        <script src="https://unpkg.com/elm-pep"></script>
+        <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+        <!-- Start Map Modules -->
+        <script type="text/javascript">
+
+            let public_url = 'http://102.37.157.16:8080/geoserver';
+            let workspace = 'PUBLIC_PORTAL';
+            //Hapaa
+            $(".perc-append").append('<div id="water_coverage" data-percent="56" data-duration="1000" data-color="white,#F05252" class="progress-bar"></div>');
+            add_county_list_to_dropdown()
+
+            let bounds = [
+                3081106.556197644,
+                -669430.6423414556,
+                5893182.795526399,
+                617606.8552159107
+                ];
+            let format = 'image/png';
+
+            //get_kpi_array()
+            //get_water_service_area_utilities_array()
+
+
+            $(document).ready(function() {
+                $("#non_revenue_water").hide();
+                $("#metering_ratio").hide();
+
+                $('.js-example-basic-single').select2();
+
+                $(".progress-bar").loading();
+
+                const water_coverage = document.getElementById('water_coverage');
+                //water_coverage.setAttribute('data-percent','10');
+                water_coverage.setAttribute('data-color', '#ccc,yellow');
+                water_coverage.setAttribute('data-duration', '1000');
+
+                //Change CSS for indicators to accomodate Attribute table for layers
+                document.getElementById("indicators").style.cssText = "background-color: #FAFAFA;  margin-right:40px !important;";
+
+
+            });
+            //console.log("County boundaries", county_boundaries_json1);
+
+            
+
+            get_analytics_geojson();
+
+            async function get_analytics_geojson() {
+
+                let res = await axios.get('http://102.37.157.16:8080/geoserver/PUBLIC_PORTAL/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=PUBLIC_PORTAL%3Akpi_county&maxFeatures=2350&outputFormat=application%2Fjson');
+                const all_indicators = JSON.parse(JSON.stringify(res.data.features));
+
+                let sum_ps = 0;
+                let sum_psa = 0;
+                let wp = 0;
+                let bv = 0;
+                let nac = 0;
+                let ntc = 0;
+
+                let awc = 0;
+                let nmc = 0;
+
+
+                for (let i = 0; i < all_indicators.length; i++) {
+                    const pop_served = all_indicators[i].properties.population_served;
+                    const pop_service_area = all_indicators[i].properties.population_service_area;
+
+                    const water_produced = all_indicators[i].properties.water_produced;
+                    const billed_volume = all_indicators[i].properties.billed_volume;
+
+                    const active_connections = all_indicators[i].properties.active_connections;
+                    const staff_total = all_indicators[i].properties.staff_total;
+
+                    const active_water_connections = all_indicators[i].properties.active_water_connections;
+                    const metered_connections = all_indicators[i].properties.metered_connections;
+
+                    //Water coverge
+                    sum_ps += pop_served;
+                    sum_psa += pop_service_area;
+
+                    //Non Revenue Water
+                    wp += water_produced;
+                    bv += billed_volume;
+
+                    //Staff productivity
+                    nac += active_connections;
+                    ntc += staff_total;
+
+                    //Metering Ratio
+                    awc += active_water_connections;
+                    nmc += metered_connections;
+
+                }
+
+                let national_water_coverage = ((sum_ps / sum_psa) * 100).toFixed(0);
+                let non_revenue_water = (((wp - bv) / wp) * 100).toFixed(0);
+                let staff_productivity = ((ntc / nac) * 1000).toFixed(0);
+                let metering_ratio = (((nmc / awc)) * 100).toFixed(0);
+
+                $('#national_wc').html(national_water_coverage);
+                $('#national_nrw').html(non_revenue_water);
+                $('#national_metering_ratio').html(metering_ratio);
+                $('#population_served').html(sum_ps.toLocaleString());
+                $('#population_service_area').html(sum_psa.toLocaleString());
+                $('#active_water_connections').html(awc.toLocaleString());
+                $('#water_produced').html(wp.toLocaleString());
+
+                $('#national_legend_title').hide();
+
+                //console.log("Natioanl", nmc);
+                //$("#county_level").hide();
+                // $('#myTable tbody').append('<tr class ="table_class" id="table_id" data-name="' + name + '"><td>XXXX</td></tr>');
+                //$('#water_coverage').append('<div data-end-value="' + national_water_coverage + '" class="circular-progress circular-progress-small mx-auto"><div class="value-container value-container-small text-slate-600">0%</div></div>');
+                // $("#water_coverage").data-end("92", national_water_coverage);
+
+                //var startTime = national_water_coverage.getAttribute('data-end-value');
+                // var startTime = $('.water_coverage').getAttribute('data-end-value');
+                // console.log("Startr",startTime)
+
+
+                //const element = document.querySelector("#water_coverage");
+                //  delete element.dataset.attributeName;
+
+                const t = '67';
+                //  $("#water_coverage_analytics").attr("data-end-value", t); 
+                // console.log("Jujuuu",$("#water_coverage_analytics").data("end-value"));
+
+
+
+
+            }
+
+            //Add county list to select dropdown
+
+            async function add_county_list_to_dropdown() {
+
+                let res = await axios.get('http://102.37.157.16:8080/geoserver/WASREB/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=WASREB%3Acounty&maxFeatures=50&outputFormat=application%2Fjson&authkey=488c54cd-6392-4d20-953d-b522f791a23e');
+                const all_county_list = JSON.parse(JSON.stringify(res.data.features));
+
+                await $.each(all_county_list, function(i, option) {
+                    //console.log("List", option.properties.name);
+                    $('#main-search').append($('<option/>').attr("value", option.properties.name).text(option.properties.name));
+                });
+
+
+            }
+
+            let country_style = new ol.style.Style({
+                stroke: new ol.style.Stroke({
+                    color: 'black',
+                }),
+                width: 10
+            })
+
+            let country = new ol.source.TileWMS({
+                url: 'http://102.37.157.16:8080/geoserver/PUBLIC_PORTAL/wms',
+                params: {
+                    'FORMAT': format,
+                    'VERSION': '1.1.1',
+                    tiled: true,
+                    "STYLES": 'admin_poly_grey',
+                    "LAYERS": 'PUBLIC_PORTAL:country',
+                    "exceptions": 'application/vnd.ogc.se_inimage',
+                    tilesOrigin: 3774876.0657275263 + "," + -521207.0057444413
+                }
+            });
+
+            let water_coverage_onload = new ol.layer.Tile({
+                zIndex: 6,
+                visible: true,
+                source: new ol.source.TileWMS({
+                    url: "http://102.37.157.16:8080/geoserver/PUBLIC_PORTAL/wms",
+                    params: {
+                        FORMAT: format,
+                        VERSION: "1.1.0",
+                        tiled: !0,
+                        STYLES: 'water_coverage',
+                        LAYERS: "PUBLIC_PORTAL:kpi_county",
+                        exceptions: "application/vnd.ogc.se_inimage",
+                        tilesOrigin: "3774876.0657275263,-521207.0057444413"
+                    }
+                }),
+                title: 'Water coverage'
+            });
+
+            //non_revenue_water
+
+            let metering_ratio_onload = new ol.layer.Tile({
+                zIndex: 7,
+                visible: false,
+                source: new ol.source.TileWMS({
+                    url: "http://102.37.157.16:8080/geoserver/PUBLIC_PORTAL/wms",
+                    params: {
+                        FORMAT: format,
+                        VERSION: "1.1.0",
+                        tiled: !0,
+                        STYLES: 'metering_ratio',
+                        LAYERS: "PUBLIC_PORTAL:kpi_county",
+                        exceptions: "application/vnd.ogc.se_inimage",
+                        tilesOrigin: "3774876.0657275263,-521207.0057444413"
+                    }
+                }),
+                title: 'Water coverage'
+            });
+
+            let non_revenue_water_onload = new ol.layer.Tile({
+                zIndex: 8,
+                visible: false,
+                source: new ol.source.TileWMS({
+                    url: "http://102.37.157.16:8080/geoserver/PUBLIC_PORTAL/wms",
+                    params: {
+                        FORMAT: format,
+                        VERSION: "1.1.0",
+                        tiled: !0,
+                        STYLES: 'non_revenue_water',
+                        LAYERS: "PUBLIC_PORTAL:kpi_county",
+                        exceptions: "application/vnd.ogc.se_inimage",
+                        tilesOrigin: "3774876.0657275263,-521207.0057444413"
+                    }
+                }),
+                title: 'Non-revenue water'
+            });
+
+            let county = new ol.source.TileWMS({
+                url: 'http://102.37.157.16:8080/geoserver/PUBLIC_PORTAL/wms',
+                params: {
+                    'FORMAT': format,
+                    'VERSION': '1.1.1',
+                    tiled: true,
+                    "STYLES": 'admin_poly_grey',
+                    "LAYERS": 'PUBLIC_PORTAL:county',
+                    "exceptions": 'application/vnd.ogc.se_inimage',
+                    tilesOrigin: 3774876.0657275263 + "," + -521207.0057444413
+                }
+            });
+
+            let topography = new ol.source.XYZ({
+                attributions: 'Tiles © <a href="https://services.arcgisonline.com/ArcGIS/' +
+                    'rest/services/World_Topo_Map/MapServer">ArcGIS</a>',
+                url: 'https://server.arcgisonline.com/ArcGIS/rest/services/' +
+                    'World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
+            });
+
+            let county_boundaries_json1 = new ol.source.Vector({
+                projection: 'EPSG:3857',
+                url: 'http://102.37.157.16:8080/geoserver/WASREB/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=WASREB%3Acounty&maxFeatures=50&outputFormat=application%2Fjson&authkey=488c54cd-6392-4d20-953d-b522f791a23e',
+                format: new ol.format.GeoJSON()
+            });
+
+            let country_boundary = new ol.layer.Tile({
+                style: country_style,
+                visible: true,
+                source: country,
+                title: 'Kenya National Boundary'
+            });
+            let county_boundary = new ol.layer.Tile({
+                visible: false,
+                source: county,
+                title: 'County Boundary'
+            });
+
+
+            let topography_basemap = new ol.layer.Tile({
+                displayInLayerSwitcher: true,
+                visible: true,
+                source: topography,
+                title: 'Topography Basemap'
+            });
+
+            let county_boundaries = new ol.layer.Vector({
+                opacity: 0.0,
+                visible: true,
+                source: county_boundaries_json1,
+                title: 'County Boundaries'
+            });
+
+
+            //water_coverage  PUBLIC_PORTAL:kpi_county
+
+           
+
+            let view = new ol.View({
+                zoom: 9,
+                center: [0.340505, 37.310292]
+            });
+
+            
+            let viewProjection = view.getProjection();
+            let viewResolution = view.getResolution();
+            // The Map
+
+            // Popup overlay
+            let popup = new ol.Overlay.Popup({
+                popupClass: "default", //"tooltips", "warning" "black" "default", "tips", "shadow",
+                anim: true,
+                closeBox: true,
+                positioning: 'center',
+                autoPan: {
+                    animation: { duration: 4250 }
+                }
+            });
+
+            let popup2 = new ol.Overlay.Popup({
+                popupClass: "default", //"tooltips", "warning" "black" "default", "tips", "shadow",
+                anim: true,
+                closeBox: true,
+                positioning: 'center',
+                autoPan: {
+                    animation: { duration: 4250 }
+                }
+            });
+
+            let map = new ol.Map({
+                target: 'map',
+                view: view,
+                overlays: [popup, popup2]
+            });
+
+            var mousePosition = new ol.control.ScaleLine({
+                units: 'degrees',
+                minWidth: 120
+            });
+
+            var zoomToExtentControl = new ol.control.ZoomToExtent({
+                extent: [
+                    3081106.556197644,
+                    -669430.6423414556,
+                    5893182.795526399,
+                    617606.8552159107
+                    ]
+            });
+
+            
+
+
+            map.getView().fit(bounds, map.getSize());
+            // Add a layer switcher outside the map
+            var lswitcher = new ol.control.LayerSwitcher({
+                target: $(".layerSwitcher").get(0),
+                selection: true,
+                allwaysOnTop: true,
+                extent: true
+            });
+
+            // Add Basemap and boundaries
+
+            map.addLayer(topography_basemap);
+            map.addLayer(county_boundaries);
+            map.addLayer(county_boundary);
+            map.addLayer(country_boundary);
+            map.addLayer(water_coverage_onload);
+            map.addLayer(non_revenue_water_onload);
+            map.addLayer(metering_ratio_onload);
+
+
+            $(document).on('change', '#radio-wsp', function() {
+                     
+                // Hide KPI layers
+                metering_ratio_onload.setVisible(false);
+                water_coverage_onload.setVisible(false);
+                non_revenue_water_onload.setVisible(false);
+                county_boundary.setVisible(true);
+
+                // Hide kpi drawer .kpi-popbox
+
+                $(".kpi-popbox").addClass('hidden').removeClass('show');
+
+
+                    //Hide indicator box and change width
+                    $(".indicator_info").addClass('hidden').removeClass('show');
+                    //document.getElementById("indicators").style = "width:620px;";
+
+                    window.localStorage.setItem('layer_checked', 'checked|'+$(this).data("layername")+'|'+ $(this).data("layertitle") +'');
+
+                    popup.hide();
+                    popup2.hide();
+
+                    // window.localStorage.setItem('selected_layer', $(this).data("layertitle"));
+                    let layertitle = $(this).data("layertitle"); 
+                    let legendurl = $(this).data("legendurl");
+
+                    let size0 = $(this).data("size0");
+                    let size1 = $(this).data("size1");
+
+                
+                    //alert($(this).data("layername"));
+
+                    let water_utilities_check = document.getElementsByName("water_utilities[]");
+
+                    var check3 = document.querySelectorAll('.check3');
+                    //alert(check3);
+
+                    var checkbox = document.getElementById('radio-wsp').checked;
+
+                    // for (j = 0; j < water_utilities_check.length; j++){
+
+                    //  water_utilities_check.addEventListener('change', (event) => {	
+
+                        var inputs = document.querySelectorAll('.check3_'+ $(this).data("layername") +'');
+                        console.log("Hapa Hapa", inputs);
+                            for (var i = 0; i < inputs.length; i++) {
+
+                             console.log("Inputtt", inputs);
+                          
+                                //inputs[i].checked = true;
+                            let water_utilities = new ol.layer.Tile({
+                                    
+                                    zIndex: 9,
+                                    source: new ol.source.TileWMS({
+                                        url: "http://102.37.157.16:8080/geoserver/PUBLIC_PORTAL/wms",
+                                        params: {
+                                            FORMAT: format,
+                                            VERSION: "1.1.1",
+                                            tiled: !0,
+                                            STYLES: $(this).data("style"),
+                                            LAYERS: "PUBLIC_PORTAL:" + $(this).data("layername"),
+                                            exceptions: "application/vnd.ogc.se_inimage",
+                                            tilesOrigin: "3774876.0657275263,-521207.0057444413"
+                                        }
+                                    }),
+                                    title: $(this).data("layertitle")
+                                });
+
+                            map.addLayer(water_utilities);
+
+                            if(inputs[i].checked)
+                            {
+                            
+                            // console.log("Check Box Status",  inputs[i].checked, "LayerName", $(this).data("layername"), "LayerStyle", $(this).data("style"));
+
+                                
+
+                            } else {
+
+                                //$(".legend_main").addClass('hiiden').removeClass('show');
+                                //console.log("Check Box Status",  inputs[i].checked, "LayerName", $(this).data("layername"), "LayerStyle", $(this).data("style"));
+
+                            }
+
+                            map.getLayers().forEach(function(layer) {
+                                console.log("Map layers", layer.get('title'));  
+                            // document.getElementById('legend').innerHTML = "<img  height='"+ size0 +"' width='"+ size0 +"' src='"+ legendurl +"'>";
+                            // document.getElementById('legend-title').innerHTML = ""+ layertitle +"";
+                                
+                                //console.log("Visible", layer.get('visible'),"LayerTitle",layer.get('title'), "Input Title", layertitle, "Checkbox Status", inputs[i].checked);
+                                
+                                if(layer.get('visible') && layer.get('title') == layertitle && inputs[i].checked === false)
+                                {
+                                    
+                                    layer.setVisible(false);
+                                    //$(".legend_main").addClass('hidden').removeClass('show');
+
+                                } else if(layer.get('visible') && layer.get('title') == layertitle && inputs[i].checked === true)
+                                {
+                                    layer.setVisible(true);
+                                    $(".legend_main").addClass('show').removeClass('hidden');
+
+                                    console.log("LegendURL", legendurl);
+                                    
+                                    document.getElementById('legend').innerHTML = "<img  height='"+ size0 +"' width='"+ size0 +"' src='"+ legendurl +"'>";
+                                    document.getElementById('legend-title').innerHTML = ""+ layertitle +"";
+
+                                }
+                            });
+
+                            }
+                    
+                        //});
+
+                        //  }
+
+                        // alert(water_utilities_check);
+                        //console.log("Waterr", water_utilities_check);
+
+                });
+
+                $(document).on('click', '#kpi_list', function() {
+                  
+                   let kpi_name = $(this).data("kpi-name");
+
+                   if(kpi_name == "Water coverage")
+                   {
+
+                    metering_ratio_onload.setVisible(false);
+                    water_coverage_onload.setVisible(true);
+                    non_revenue_water_onload.setVisible(false);
+
+                   } else if(kpi_name == "Non-revenue water") {
+
+                    metering_ratio_onload.setVisible(false);
+                    water_coverage_onload.setVisible(false);
+                    non_revenue_water_onload.setVisible(true);
+
+                   } else if(kpi_name == "Metering ratio") {
+
+                    metering_ratio_onload.setVisible(true);
+                    water_coverage_onload.setVisible(false);
+                    non_revenue_water_onload.setVisible(false);
+
+                    }
+
+                   
+
+                   
+
+                });
+
+                // Map onclick
+                    map.on('pointermove', function(evt) {
+
+                    //console.log("Feature Feature", ext);
+
+                    //console.log("Map Extent Extent", map.getView().calculateExtent(map.getSize()));
+
+                    const wusa_layers = map.getLayerGroup().getLayers().getArray();
+                    for (let f = 0; f < wusa_layers.length; f++) {
+                        
+                        let wusa_each_layer = wusa_layers[f];
+                        if (wusa_each_layer.get('visible')) {
+
+                            //console.log("Layers Layers...", wusa_each_layer);  Kenya National Boundary
+                            
+                            if (wusa_each_layer.get('title') == 'Water coverage' || wusa_each_layer.get('title') == 'Non-revenue water' || wusa_each_layer.get('title') == 'Metering ratio') {
+                                console.log("WUSA Layers", wusa_each_layer);
+                                //const wusa_extent = wusa_each_layer.getSource().getExtent();
+
+                            // console.log("WUSA Extent", wusa_each_layer);
+
+                                var url = wusa_each_layer.getSource().getFeatureInfoUrl(
+                                    evt.coordinate, viewResolution, viewProjection, {
+                                        'INFO_FORMAT': 'application/json'
+                                });
+
+                                $.ajax({
+                                    url: url,
+                                    dataType: 'json',
+                                    success: function(response) {
+
+                                        var result = response;
+                                    // console.log("Resultss", result);
+                                        if (result.features.length != 0) {
+
+                                            console.log("Resultss", result.features[0].properties);
+
+                                            const myObj = JSON.parse(JSON.stringify(result.features[0].properties));
+
+
+
+                                            let text = "<div style='text-transform: capitalize !important; margin-right:30px !important;'><h5>"+ wusa_each_layer.get('title').replaceAll('_', ' ') +"</h5><br><table id='layer_info_table' class='text-left' style='margin-left: 10px !important;; font-size:12px!important;'>"
+                                            let t;
+
+                                            console.log(myObj);
+                                            
+                                                for (let x in myObj) {
+
+                                                    if(wusa_each_layer.get('title') == 'Water coverage' && x == 'water_coverage'){
+                                                       if(myObj[x] != 'null'){
+                                                            text += "<tr><td style='padding: 1; margin:1;'>"+ myObj.name +"&nbsp;&nbsp;&nbsp;&nbsp;</td><td style='padding: 4; margin:4;'>" +  myObj.water_coverage + "</td></tr>";
+                                                      }
+
+                                                    }
+
+                                                    if(wusa_each_layer.get('title') == 'Metering ratio' && x == 'metering_ration'){
+                                                       if(myObj[x] != 'null'){
+                                                            text += "<tr><td style='padding: 1; margin:1;'>"+ myObj.name +"&nbsp;&nbsp;&nbsp;&nbsp;</td><td style='padding: 4; margin:4;'>" + myObj.water_coverage + "</td></tr>";
+                                                      }
+
+                                                    }
+
+                                                    if(wusa_each_layer.get('title') == 'Non-revenue water' && x == 'nrw'){
+                                                       if(myObj[x] != 'null'){
+                                                            text += "<tr><td style='padding: 1; margin:1;'>County Name: "+ myObj.name +"&nbsp;&nbsp;&nbsp;&nbsp;</td><td style='padding: 4; margin:4;'>" + myObj.water_coverage + "</td></tr>";
+                                                      }
+
+                                                    }
+                                                    
+                                                     //console.log(myObj.water_coverage);
+                                                     
+                                                    }
+                                            text += "</table></div>"     
+
+                                            //let t = '<h5 class="text-center">Hapaa</h5><br>';
+                                            // <img src='" + feature.get("img") + "'/>
+                                            var content = "";
+                                            content += text;
+                                            //content += '<br/><i>powered by <a href="https://github.com/Viglino/ol-ext" target="ol">ol-ext</a></i>';
+
+                                            // alert(wusa_each_layer.get('title'));
+
+                                            if(wusa_each_layer.get('title') == "County Boundary" || wusa_each_layer.get('title') == "County boundaries")
+                                                {
+                                                return false;  
+                                                } else {
+
+                                                    setTimeout(function() {
+
+                                                        if (result.features.length != 0) {
+                                                       popup2.show(evt.coordinate, content);
+                                                        } else {
+                                                        popup.show(evt.coordinate, content);
+                                                        }
+                                                    
+                                                    }, 1000);
+
+                                                }
+
+                                        } else {
+
+                                            popup.hide();
+                                            popup2.hide();
+
+                                        }
+
+
+
+                                        //map.getView().setZoom(8);
+                                        //console.log("Resutlts Features", result.features[0].properties);
+
+                                        //  $("#wusa_attribute_info").html(result.features[0].properties);
+
+                                        //  const myObj = JSON.parse(JSON.stringify(result.features[0].properties));
+                                        //     let text = "<div style='margin-right:30px !important;'><h5>"+ wusa_each_layer.get('title') +"</h5><br><table id='layer_info_table' class='text-left' style='margin-left: 10px !important;; font-size:12px!important;'>"
+                                        //     for (let x in myObj) {
+                                        //         //console.log(myObj[x]);
+                                        //         if(myObj[x] != 'null'){
+                                        //             text += "<tr><td style='padding: 4; margin:4;'>"+ x +"</td><td style='padding: 4; margin:4;'>" + myObj[x] + "</td></tr>";
+                                        //         }
+                                        //      }
+                                        //     text += "</table></div>"    
+                                        //     document.getElementById("wusa_info_box").innerHTML = text;
+
+                                        //$("#county_level").show();
+
+                                        //const LayerInfo = localStorage.getItem('LayerInfo').split("|");
+
+                                    }
+                                });
+                            }
+                        }
+                    }
+                    });
+
+                map.on('singleclick', function(evt) {
+
+                    $('#water_coverage').data('percent',20)
+
+                    let module_combined = window.localStorage.getItem('module');
+                    let module = module_combined.split("|");
+
+
+                    var highlightStyle2 = new ol.style.Style({
+                            stroke: new ol.style.Stroke({
+                            color: [255, 255, 0, 0.0],
+                            width: 0,
+                            opacity:0.0
+                        }),
+
+                    //zIndex: 1
+                    });   
+
+                    let feature = map.forEachFeatureAtPixel (evt.pixel, function (feature) {return feature;});
+                    function_clear_graphics()
+                    async function function_clear_graphics(){
+
+                    await map.getLayers().forEach(function(layer) {
+                            
+                            //alert(layer_title_bridge);
+                            //console.log("Hapa", layer.get('title'));
+                            if (layer.get('visible') && layer.get('title') == 'County Boundaries') {
+                                
+                                
+                                    layer.setVisible(true);
+                                //   /layer.getSource().clear()
+
+                                    var features =  layer.getSource().getFeatures();
+                                    console.log("LAYERS", features,"LAYER NAME", layer.get('title'));
+                                        features.forEach((feature) => {
+
+                                            const selected_county =  window.localStorage.getItem('selected_layer_click');
+                                            
+                                            if(feature.get('name') === ''+ String(selected_county) +''){
+                                                console.log("Hapa", feature.get('name'));
+                                                feature.setStyle(highlightStyle2);
+                                                //console.log("Featuree", feature.get('name'));
+                                                // layer.getSource().removeFeature(feature);
+
+                                            }
+                                            //layer.getSource().removeFeature(feature);
+                                        // feature.setStyle(highlightStyle2);
+
+
+                                        });
+
+                                    }
+
+                        });
+
+                        }
+
+                        var highlightStyle = new ol.style.Style({
+                            stroke: new ol.style.Stroke({
+                            color: [234, 151, 15, 0.0],
+                            width: 4
+                        }),
+
+                    //zIndex: 1
+                    });
+
+                    popup.hide();
+                    popup2.hide();
+
+                    
+                    //console.log("Feature Feature", feature.getGeometry().getExtent());
+                    map.getView().fit(feature.getGeometry().getExtent())
+
+                    var select = new ol.interaction.Select({
+                            style: highlightStyle,
+                            
+                        });
+
+                        function addQuotes(value) {
+                        var quotedVar = "\'" + value + "\'";
+                        return quotedVar;
+                    }
+
+                        var highlightStyle = new ol.style.Style({
+                            stroke: new ol.style.Stroke({
+                                color: [234, 151, 15  ],
+                                width: 4
+                            }),
+                            
+                            //zIndex: 1
+                        });
+
+                    
+                        var king = addQuotes(feature.get('name'));
+
+
+                        var cqlFilter = 'name=' + String(king);
+
+                        var vectorSource = new ol.source.Vector({
+                            format: new ol.format.GeoJSON(),
+                            url: function() {
+                                return 'http://102.37.157.16:8080/geoserver/wfs?service=WFS&' +
+                                    'version=1.0.0&authkey=488c54cd-6392-4d20-953d-b522f791a23e&request=GetFeature&' +
+                                    'typename=WASREB:county&' +
+                                    'CQL_FILTER=' + cqlFilter + '&' +
+                                    'outputFormat=application/json&srsname=EPSG:4326&' +
+                                    'format_options=callback:gotFetch';
+                            }
+                        });
+
+
+                        //console.log("Vector Source Extent", cb);
+                        let cb = new ol.layer.Vector({
+                            zIndex: 10,
+                            style: highlightStyle,
+                            visible: true,
+                            opacity: 0.9,
+                            source: vectorSource,
+                            title: 'County Boundaries'
+                        });
+
+                        map.addLayer(cb);
+
+                        // Filter WSP KPI
+
+                        if(module[0] == 'KPI')
+                    {    
+                        const wusa_layers = map.getLayerGroup().getLayers().getArray();
+                        console.log("WUSA", wusa_layers);
+
+                        for (let f = 0; f < wusa_layers.length; f++) {
+
+                            let wusa_each_layer = wusa_layers[f];
+                            if (wusa_each_layer.get('visible')) {
+
+                                console.log("Layers from layer list", wusa_each_layer.get('title'),"Layers from click", module[1]);
+
+
+
+
+                            }
+                        }
+                    }
+
+                        console.log("Feature 45", feature);
+
+                        window.localStorage.setItem('selected_layer_click', feature.get('name'));
+
+
+
+
+
+
+                    //    var features = new ol.Collection();
+                    //    var featureOverlay = new ol.layer.Vector({
+                    // 	source: new ol.source.Vector({
+                    // 		features: feature1
+                    // 	}),
+                    // 	style: highlightStyle
+                    //   });
+                    //   featureOverlay.setMap(map);
+
+                    //    var feature = map.forEachFeatureAtPixel(pixel, {
+                    //     layerFilter: function(layer) {
+                    //         return layer.get('name') === 'Marsabit';
+                    //     }
+                    // });
+
+                        // var feature = map.forEachFeatureAtPixel(evt.pixel, function(feature) {
+                        //     return feature;
+                        // }, {
+                        //     layerFilter: function(layer) {
+                        //         return layer.get('name') === 'Marsabit';
+                        //     }
+                        // });
+
+                    
+
+                    });
+
+            // Load all layers except KPI layers
+            get_water_service_area_utilities_array()
+
+                async function get_water_service_area_utilities_array() {
+
+                    await fetch("http://102.37.157.16:8080/geoserver/PUBLIC_PORTAL/ows?service=wms&version=1.1.1&request=GetCapabilities")
+                        .then(function(response) {
+                            return response.text();
+                        }).then(function(text) {
+
+                            var parser = new ol.format.WMSCapabilities();
+
+                            var result = parser.read(text);
+                            var layers = result.Capability.Layer.Layer;
+                            //console.log("WATER_UTILITIES", layers);
+                            //get_water_utilities_service_area(layers)
+                            return layers;
+                        }).then(function(layers) {
+
+                            //stored_layer = layers;
+                            //window.localStorage.setItem('water_utilities_service_area', JSON.stringify(layers));
+
+
+
+                            var container = $("#utilities_title");
+                            var container_sub_title = $("#utilities_sub_title");
+                            var container_title = $("#indicator_title_below");
+
+                            let water_services_utilities_layers = [];
+
+                            for (var i = 0; i < layers.length; i++) {
+
+                                //console.log("Layers Layers", layers)
+                                //console.log("My Layer Title", layers[i].Title);
+
+                                //console.log("Layers Layers", layers[i]);
+
+                                if (layers[i].Title != "Water Service Provider KPIs" && layers[i].Title != "County Level KPIs") {
+
+                                    //console.log("Sub layers", sub_utilities[i]);
+                                    let sub_utilities = layers[i].Layer;
+                                    container.append("<div class='flex justify-between'> <div class='flex items-center'> <input id='group-"+ w +"' type='checkbox' value='' class='sidebar-checkbox'> <label for='group-"+ w +"' class='sidebar-checkbox-label'><b>" + layers[i].Title +"</b></label> </div> <svg x-on:click='isOpen = !isOpen' class='w-4 h-4 cursor-pointer transition-all ease-in-out' :class='{'rotate-180' : isOpen}' fill='none' stroke='currentColor' stroke-width='1.5' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg' aria-hidden='true'> <path stroke-linecap='round' stroke-linejoin='round' d='M19.5 8.25l-7.5 7.5-7.5-7.5'></path> </svg> </div>")
+                                    //container.append('<div x-data="{isOpen: true}" id="checkbox-group-2" class="p-2">');
+                                    for (var w = 0; w < sub_utilities.length; w++) {
+                                        let sub_layerss = sub_utilities[w];
+                                        
+                                        //container.append("<div x-show='isOpen' class='ml-6 mt-2'> <div class='flex items-center mb-2'> <input id='group-"+ w +"-option-"+ w +"' type='checkbox' value='' class='sidebar-checkbox'> <label for='group-"+ w +"-option-1' class='sidebar-checkbox-label'>Option 1</label> </div> </div>");
+                                        if (sub_layerss.Layer) {
+                                            //container.append('<h4 style="color:black" class="text-bold mb-1 text-white"><b>' + sub_utilities[w].Title + '</b></h4><br>');
+                                            let sub_layers2 = sub_layerss.Layer;
+                                            container.append("<div class='flex justify-between'> <div class='flex items-center'> <input id='group-"+ w +"' type='checkbox' value='' class='sidebar-checkbox'> <label for='group-"+ w +"' class='sidebar-checkbox-label'>" + sub_utilities[w].Title +"</label></div><svg x-on:click='isOpen = !isOpen' class='w-4 h-4 cursor-pointer transition-all ease-in-out' :class='{'rotate-180' : isOpen}' fill='none' stroke='currentColor' stroke-width='1.5' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg' aria-hidden='true'> <path stroke-linecap='round' stroke-linejoin='round' d='M19.5 8.25l-7.5 7.5-7.5-7.5'></path> </svg></div>")
+                                            for (var x = 0; x < sub_layers2.length; x++) {
+                                                console.log("Legend", sub_layers2[x].Style[0].LegendURL[0].OnlineResource);
+                                                //console.log("Sub layers Length", sub_layers2[x].Title, "Sub layers Title", sub_utilities[w].Title);
+                                               // container.append('<div class="flex items-center mb-2"> <input id="group-1-option-1" type="checkbox" value="" class="sidebar-checkbox"> <label for="group-1-option-1" class="sidebar-checkbox-label">Option 1</label> </div> </div>');
+                                               container.append("<div x-show='isOpen' class='ml-6 mt-2'> <div class='flex items-center mb-2'> <input id='radio-wsp' data-size1='" + sub_layers2[x].Style[0].LegendURL[0].size[0] + "' data-size0='" + sub_layers2[x].Style[0].LegendURL[0].size[1] + "' data-style='" + sub_layers2[x].Style[0].Name + "' data-legendurl='" + sub_layers2[x].Style[0].LegendURL[0].OnlineResource + "' data-layertitle='" + sub_layers2[x].Title + "' data-layername='" + sub_layers2[x].Name + "' type='checkbox' name='water_utilities[]' value='"+ sub_layers2[x].Name +"' class='check3_"+sub_layers2[x].Name+" sidebar-checkbox'> <label for='group-"+ w +"-option-1' class='sidebar-checkbox-label'>" + sub_layers2[x].Title + "</label></div><img class='ml-5' height='"+ sub_layers2[x].Style[0].LegendURL[0].size[1] +"' width='"+ sub_layers2[x].Style[0].LegendURL[0].size[0] +"' src='"+ sub_layers2[x].Style[0].LegendURL[0].OnlineResource +"' alt='No Legend'></div>");
+                                            }
+
+                                         } else {
+
+                                              container.append("<div x-show='isOpen' class='ml-6 mt-2'> <div class='flex items-center mb-2'><input id='radio-wsp' data-size1='" + sub_utilities[w].Style[0].LegendURL[0].size[0] + "' data-size0='" + sub_utilities[w].Style[0].LegendURL[0].size[1] + "' data-style='" + sub_utilities[w].Style[0].Name + "' data-legendurl='" + sub_utilities[w].Style[0].LegendURL[0].OnlineResource + "' data-layertitle='" + sub_utilities[w].Title + "' data-layername='" + sub_utilities[w].Name + "' type='checkbox' name='water_utilities[]' value='"+ sub_utilities[w].Name +"' class='check3_"+sub_utilities[w].Name+" sidebar-checkbox'> <label for='group-"+ w +"-option-1' class='sidebar-checkbox-label'>" + sub_utilities[w].Title + "</label></div><img class='ml-5' height='"+ sub_utilities[w].Style[0].LegendURL[0].size[1] +"' width='"+ sub_utilities[w].Style[0].LegendURL[0].size[0] +"' src='"+ sub_utilities[w].Style[0].LegendURL[0].OnlineResource +"' alt='No Legend'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>");
+                                         }
+
+                          
+                                        // for (var x = 0; x < sub_layers.length; x++) {
+
+
+
+                                        //}
+
+                                        //console.log("LAYERS 2 LAYERS 2", sub_utilities[w].Title)
+                                        //layers[i].Title
+                                        // console.log("STYLE", sub_utilities[w].Style[0].Name);
+
+
+                                    }
+
+                                } else {
+
+                                    //if (!sub_utilities) {
+                                    if (layers[i].Title == "County Level KPIs") {
+
+                                        let style = layers[i].Style;
+
+                                        container_title.append('<h5 style="color:black" class="text-bold text-center"><b>' + layers[i].Title.replaceAll('_', ' ') + '</b></h5><br>');
+                                        for (var w = 0; w < style.length; w++) {
+
+                                            //("Name",style[w]);
+
+                                            if (style[w].Title == 'non_revenue_water') {
+                                                icons = './img/icons/non-revenue-06.svg';
+                                            } else if (style[w].Title == 'staff_productivity') {
+                                                icons = './img/icons/staff-productivity-03.svg';
+                                            } else if (style[w].Title == 'metering_ratio') {
+                                                icons = './img/icons/metering-ratio-02.svg';
+                                            } else if (style[w].Title == 'water_coverage') {
+                                                icons = './img/icons/drinking-water-01.svg';
+                                            }
+
+                                            // console.log("Layersss  "+ layers[i].Name +"",style[w].Title);
+                                            // <p>92</p> <div class="metric-element bg-red-500"></div>
+                                            // <div class="metric-element bg-red-500"><p>92</p></div>
+
+                                            container_title.append('<div id="kpi_list" data-maintitle="' + layers[i].Title + '" data-size1="' + style[w].LegendURL[0].size[1] + '" data-size0="' + style[w].LegendURL[0].size[0] + '" data-legendurl="' + style[w].LegendURL[0].OnlineResource + '" data-layertitle="' + style[w].Title + '" data-stylename="' + style[w].Name + '" data-layername="' + layers[i].Name + '" class="metric-container"> <div class="metric-element border border-slate-300"> <img src="' + icons + '" class="h-4 w-4 mx-auto"> </div> <div class="flex flex-col justify-center"> <p class="metric-label text-xs">' + style[w].Title.replaceAll('_', ' ') + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p> </div></div>');
+
+                                        }
+                                    }
+                                    //}
+
+                                }
+
+
+
+                                //let name = "John Doe";
+                                //console.log("Title " + layers[i].Title, "Name " + layers[i].Name, "STYLE", layers[i].Style[0].Name, "LegendURL", layers[i].Style[0].LegendURL[0].OnlineResource);
+
+                                //water_services_utilities_layers.push()
+
+                                //map.addLayer(new ol.layer.Tile({ zIndex: 9, visible: false, source: new ol.source.TileWMS({url:"http://102.37.157.16:8080/geoserver/WASREB/wms",params:{FORMAT:format,VERSION:"1.1.1",tiled:!0,STYLES:layers[i].Style[0].Name,LAYERS:"PUBLIC_PORTAL:"+ layers[i].Name,exceptions:"application/vnd.ogc.se_inimage",tilesOrigin:"3774876.0657275263,-521207.0057444413"}}), title:layers[i].Title }));
+                                //$("#utilities_title").html(layers[i].Title);
+
+                            }
+
+                            return water_services_utilities_layers;
+
+                        }).then(function(water_services_utilities_layers) {
+                            //console.log("LAYERSS", water_services_utilities_layers);
+                            //map.addLayer([water_services_utilities_layers]);
+                        });
+                    //map.addLayer(osmLayer)
+                }
+            
+
+            
+        </script>
+        <script type="module">
+            import showProgressBar from './script/show-progress-bar.js'
+            const waterCoverageBar = document.querySelector('.water-coverage')
+            const waterQualityBar = document.querySelector('.water-quality')
+            const costCoverageBar = document.querySelector('.cost-coverage')
+            const hoursOfSupplyBar = document.querySelector('.hours-of-supply')
+            const collectionEfficiencyBar = document.querySelector('.collection-efficiency')
+            const nonRevenueBar = document.querySelector('.non-revenue-water')
+            const staffProductivityBar = document.querySelector('.staff-productivity')
+            const meteringRatioBar = document.querySelector('.metering-ratio')
+
+
+           
+             // water coverage
+             showProgressBar({
+                lowerThreshold: 80, 
+                upperThreshold: 90, 
+                endValue: 57, 
+                progressBar: waterCoverageBar
+            })
+           
+
+            // water quality
+            showProgressBar({
+                lowerThreshold: 90,
+                upperThreshold: 95,
+                endValue: 72,
+                progressBar: waterQualityBar
+            })
+
+            // Hours of supply
+            showProgressBar({
+                lowerThreshold: 16,
+                upperThreshold: 24,
+                endValue: 15,
+                progressBar: hoursOfSupplyBar,
+                metric: 'hours'
+            })
+
+            // cost coverage
+            showProgressBar({
+                lowerThreshold: 20,
+                upperThreshold: 30,
+                endValue: 18,
+                progressBar: costCoverageBar,
+                reverse: true
+            })
+
+            // collection efficiency
+            showProgressBar({
+                lowerThreshold: 85,
+                upperThreshold: 95,
+                endValue: 63,
+                progressBar: collectionEfficiencyBar,
+            })
+
+            // non-revenue
+            showProgressBar({
+                lowerThreshold: 20,
+                upperThreshold: 25,
+                endValue: 47,
+                progressBar: nonRevenueBar,
+                reverse: true
+            })
+
+            // staff productivity
+            showProgressBar({
+                lowerThreshold: 5,
+                upperThreshold: 8,
+                endValue: 6,
+                metric: 'hours',
+                progressBar: staffProductivityBar,
+                reverse: true
+            })
+
+            // metering ratio
+            showProgressBar({
+                lowerThreshold: 95,
+                upperThreshold: 100,
+                endValue: 96,
+                progressBar: meteringRatioBar,
+            })
+        </script>
+    </body>
+</html>
